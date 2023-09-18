@@ -77,4 +77,4 @@ __sapper__/
 .quokka/
 
 # Ignore node_modules inside the A/src folder
-A/src/node_modules/
+CS/src/node_modules/
