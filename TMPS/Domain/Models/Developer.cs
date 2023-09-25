@@ -4,7 +4,7 @@ namespace TMPS.Domain.Models
     {
         public List<string?> Skills { get; set; }
 
-        public Developer(string? name, string? position, decimal baseSalary, List<string?> skills) : base(name, position, baseSalary)
+        public Developer(int id, string? name, string? position, decimal baseSalary, List<string?> skills) : base(id, name, position, baseSalary)
         {
             Skills = skills;
         }

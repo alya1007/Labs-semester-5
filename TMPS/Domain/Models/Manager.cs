@@ -4,7 +4,7 @@ namespace TMPS.Domain.Models
     {
         public int TeamSize { get; set; }
 
-        public Manager(string? name, string? position, decimal baseSalary, int teamSize) : base(name, position, baseSalary)
+        public Manager(int id, string? name, string? position, decimal baseSalary, int teamSize) : base(id, name, position, baseSalary)
         {
             TeamSize = teamSize;
         }
