@@ -1,5 +1,5 @@
 using TMPS.Domain.Interfaces;
-using TMPS.Domain.Models;
+using TMPS.Domain.Models.Abstractions;
 using System.Text.Json;
 
 namespace TMPS.DataAccess.Employees
@@ -35,7 +35,7 @@ namespace TMPS.DataAccess.Employees
         public Employee GetEmployeeById(int id)
         {
             List<Employee> employees = GetAllEmployees();
-            return employees.FirstOrDefault(e => e.Id == id) ?? new Employee(0, "", "", 0);
+            return employees.FirstOrDefault(e => e.Id == id) ?? throw new ArgumentException("Employee not found.");
         }
 
         public Employee AddEmployee(Employee employee)
@@ -56,7 +56,7 @@ namespace TMPS.DataAccess.Employees
                 SaveEmployeesToJson(employees);
                 return employee;
             }
-            return new Employee(0, "", "", 0);
+            throw new ArgumentException("Employee not found.");
         }
 
         public void DeleteEmployee(int id)
@@ -76,7 +76,6 @@ namespace TMPS.DataAccess.Employees
             catch (IOException ex)
             {
                 Console.WriteLine($"Error saving JSON to file: {ex.Message}");
-                // Handle the file save error, e.g., log it or throw an exception.
             }
         }
     }

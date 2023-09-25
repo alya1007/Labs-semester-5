@@ -1,4 +1,4 @@
-using TMPS.Domain.Models;
+using TMPS.Domain.Models.Abstractions;
 
 namespace TMPS.Domain.Interfaces;
 public interface IEmployeeRepository
