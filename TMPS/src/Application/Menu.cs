@@ -20,10 +20,10 @@ public class Menu
     private readonly Dictionary<string, Action> _employeeRefiners = new();
     private Employee? _employee;
 
-    public Menu()
+    public Menu(IEmployeeFactory employeeFactory, IEmployeeRepository employeeRepository)
     {
-        _employeeFactory = new EmployeeFactory();
-        _employeeRepository = new EmployeeRepository();
+        _employeeFactory = employeeFactory;
+        _employeeRepository = employeeRepository;
 
         _employeeFactories.Add(DEVELOPER, _employeeFactory.CreateDeveloper);
         _employeeFactories.Add(MANAGER, _employeeFactory.CreateManager);
