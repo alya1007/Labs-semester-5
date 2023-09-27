@@ -4,8 +4,8 @@ namespace TMPS.Domain.Interfaces;
 public interface IEmployeeRepository
 {
     List<Employee> GetAllEmployees();
-    Employee GetEmployeeById(int id);
+    Employee GetEmployeeById(string id);
     Employee AddEmployee(Employee employee);
     Employee UpdateEmployee(Employee employee);
-    void DeleteEmployee(int id);
+    void DeleteEmployee(string id);
 }

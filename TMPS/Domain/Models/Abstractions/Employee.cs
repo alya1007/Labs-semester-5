@@ -1,17 +1,16 @@
+using System.Text.Json.Serialization;
+
 namespace TMPS.Domain.Models.Abstractions
 {
-    public abstract class Employee
+    [JsonDerivedType(typeof(Developer), typeDiscriminator: "developer")]
+    [JsonDerivedType(typeof(Manager), typeDiscriminator: "manager")]
+    [JsonDerivedType(typeof(HRManager), typeDiscriminator: "hrmanager")]
+    public class Employee
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string? Name { get; set; }
         public decimal BaseSalary { get; set; }
         public decimal BonusCoefficient { get; set; }
 
-        public Employee(int id, string? name, decimal baseSalary)
-        {
-            Id = id;
-            Name = name;
-            BaseSalary = baseSalary;
-        }
     }
 }

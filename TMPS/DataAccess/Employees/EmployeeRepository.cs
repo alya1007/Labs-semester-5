@@ -32,10 +32,11 @@ namespace TMPS.DataAccess.Employees
             }
         }
 
-        public Employee GetEmployeeById(int id)
+        public Employee GetEmployeeById(string id)
         {
+            Guid guidId = Guid.Parse(id);
             List<Employee> employees = GetAllEmployees();
-            return employees.FirstOrDefault(e => e.Id == id) ?? throw new ArgumentException("Employee not found.");
+            return employees.FirstOrDefault(e => e.Id == guidId) ?? throw new ArgumentException("Employee not found.");
         }
 
         public Employee AddEmployee(Employee employee)
@@ -59,11 +60,18 @@ namespace TMPS.DataAccess.Employees
             throw new ArgumentException("Employee not found.");
         }
 
-        public void DeleteEmployee(int id)
+        public void DeleteEmployee(string id)
         {
             List<Employee> employees = GetAllEmployees();
-            employees.RemoveAll(e => e.Id == id);
-            SaveEmployeesToJson(employees);
+            int index = employees.FindIndex(e => e.Id == Guid.Parse(id));
+            if (index != -1)
+            {
+                employees.RemoveAt(index);
+                SaveEmployeesToJson(employees);
+                return;
+            }
+            throw new ArgumentException("Employee not found.");
+
         }
 
         private void SaveEmployeesToJson(List<Employee> employees)

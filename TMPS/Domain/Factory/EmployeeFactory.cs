@@ -6,19 +6,19 @@ namespace TMPS.Domain.Factory;
 
 public class EmployeeFactory : IEmployeeFactory
 {
-    public Employee CreateDeveloper(int id, string name, decimal baseSalary, List<string?> skills)
+    public Developer CreateDeveloper(string name, decimal baseSalary)
     {
-        return new Developer(id, name, baseSalary, skills);
+        return new Developer(name, baseSalary, new List<string>());
     }
 
-    public Employee CreateManager(int id, string name, decimal baseSalary, int teamSize)
+    public Manager CreateManager(string name, decimal baseSalary)
     {
-        return new Manager(id, name, baseSalary, teamSize);
+        return new Manager(name, baseSalary, 0);
     }
 
-    public Employee CreateHRManager(int id, string name, decimal baseSalary, string? department)
+    public HRManager CreateHRManager(string name, decimal baseSalary)
     {
-        return new HRManager(id, name, baseSalary, department);
+        return new HRManager(name, baseSalary, "");
     }
 
 }
