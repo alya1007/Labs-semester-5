@@ -32,33 +32,33 @@ I created an employee management console application in C#. The structure of the
 
 - `Domain`
 
-    - `Models` folder contains the classes that represent the entities of the application: `Developer`, `Manager` and `HRManager`. It also has an `Abstractions` directory that contains the `Employee` class, which is the base class for all the other entities.
+  - `Models` folder contains the classes that represent the entities of the application: `Developer`, `Manager` and `HRManager`. It also has an `Abstractions` directory that contains the `Employee` class, which is the base class for all the other entities.
 
-    - `Factory` folder contains the `EmployeeFactory.cs` class, which is responsible for creating the entities (methods `CreateDeveloper`, `CreateManager` and `CreateHRManager`).
+  - `Factory` folder contains the `EmployeeFactory.cs` class, which is responsible for creating the entities (methods `CreateDeveloper`, `CreateManager` and `CreateHRManager`).
 
-    - `Interfaces` folder contains the `IEmployeeFactory` and `IEmployeeRepository` interfaces.
+  - `Interfaces` folder contains the `IEmployeeFactory` and `IEmployeeRepository` interfaces.
 
 - `UseCases`
-    
-    - `Employees\SalaryCalculator.cs` is responsible for calculating the salary of an employee, using the `BaseSalary` and `BonusCoefficient` properties of the employee.
+
+  - `Employees\SalaryCalculator.cs` is responsible for calculating the salary of an employee, using the `BaseSalary` and `BonusCoefficient` properties of the employee.
 
 - `AppData`
 
-    - `employees.json` is the database of the application, which contains the employees.
+  - `employees.json` is the database of the application, which contains the employees.
 
 - `DataAccess`
 
-    - `Employees\EmployeeRepository.cs` is responsible for interacting with the database (`employees.json`). It has the following methods: `GetAllEmployees`, `GetEmployeeById`, `AddEmployee`, `UpdateEmployee`, `DeleteEmployee`, `SaveEmployeesToJson` (this method serialize the data in JSON format).
+  - `Employees\EmployeeRepository.cs` is responsible for interacting with the database (`employees.json`). It has the following methods: `GetAllEmployees`, `GetEmployeeById`, `AddEmployee`, `UpdateEmployee`, `DeleteEmployee`, `SaveEmployeesToJson` (this method serialize the data in JSON format).
 
 - `Client` folder contains the `Program.cs` file, which is the entry point of the application.
 
 - `Application`
 
-    - `Menu.cs` is responsible for displaying the menu of the application and handling the user input. It can realize different functions: displaying all the employees, adding a new employee, updating an employee, deleting an employee.
+  - `Menu.cs` is responsible for displaying the menu of the application and handling the user input. It can realize different functions: displaying all the employees, adding a new employee, updating an employee, deleting an employee.
 
 - `Common`
 
-    - `OptionsHandler.cs` is a builder class that is responsible for handling the user input and creating the options for the menu.
+  - `OptionsHandler.cs` is a builder class that is responsible for handling the user input and creating the options for the menu.
 
 ## Solid Principles
 
@@ -80,9 +80,9 @@ The Open-Closed Principle states that a class should be open for extension but c
 
 - The `EmployeeFactory` class in the `Domain` folder follows the Open-Closed Principle by allowing the addition of new methods for creating new types of employees without modifying the existing code.
 
-- The `Menu` class in the Appli`cation folder allows for adding new menu options without modifying the class itself. It uses the builder pattern to create the menu options:
+- The `Menu` class in the `Application` folder allows for adding new menu options without modifying the class itself. It uses the builder pattern to create the menu options:
 
-```
+```cs
 OptionsHandler<int> menuOptionsHandler = new OptionsHandler<int>()
     .AddOption(1, ListEmployees)
     .AddOption(2, AddEmployee)
@@ -96,9 +96,9 @@ OptionsHandler<int> menuOptionsHandler = new OptionsHandler<int>()
 
 The Liskov Substitution Principle states that objects of derived classes should be able to replace objects of the base class without affecting program correctness. In my project:
 
-- The derived classes Developer, Manager, and HRManager extend the base class Employee and can be used interchangeably wherever an Employee object is expected. For example, the `EmployeeRepository` class in the `DataAccess` folder can work with any type of employee:
+- The derived classes Developer, Manager, and HRManager extend the base class Employee and can be used interchangeably wherever an `Employee` object is expected. For example, the `EmployeeRepository` class in the `DataAccess` folder can work with any type of employee:
 
-```
+```cs
 // The function can take as a parameter any type of employee
 
 public Employee AddEmployee(Employee employee)
@@ -120,21 +120,21 @@ The Interface Segregation Principle states that clients should not be forced to 
 
 The Dependency Inversion Principle states that high-level modules should not depend on low-level modules. Both should depend on abstractions, and abstractions should not depend on details; details should depend on abstractions. In my project:
 
-- The `EmployeeRepository` class in the `DataAccess` folder depends on the `IEmployeeRepository` interface in the `Domain.Interfaces` folder. This allows for the `EmployeeRepository` class to be easily replaced with another class that implements the `IEmployeeRepository` interface. The same principle applies to the `EmployeeFactory` class in the `Domain` folder.
+- The `Menu` class depends on the `IEmployeeFactory` and `IEmployeeRepository` interfaces, which are abstractions. Also, the `EmployeeRepository` and `EmployeeFactory` classes depend on the respective interfaces. This way, a dependency inversion takes place: the services are instantiated in the `Program.cs` file and passed to the `Menu` class:
 
-In the project, I applied the Repository architectural pattern, which separated the data access logic (interaction with the database) from the business logic. I created an interface for the repository, and a concrete class that implements the interface. The `Menu` class is using dependency injection to get an instance of the `EmployeeRepository` class (and of the `EmployeeFactory` class):
-
-```
-public Menu()
-    {
-        _employeeFactory = new EmployeeFactory();
-        _employeeRepository = new EmployeeRepository();
-
-        // ...
-
-    }
+```cs
+static void Main(string[] args)
+{
+    IEmployeeFactory employeeFactory = new EmployeeFactory();
+    IEmployeeRepository employeeRepository = new EmployeeRepository();
+    Menu menu = new(employeeFactory, employeeRepository);
+    menu.Show();
+}
 ```
 
+## Other comments
+
+In the project, I used the Repository architectural pattern, which separated the data access logic from the business logic. The `EmployeeRepository` class is responsible for interacting with the database, while not being aware of the business logic. Through dependency injection, the `EmployeeRepository` class is instantiated in the `Menu` class and passed as a parameter to the `Menu` constructor.
 
 ## Conclusion
 
