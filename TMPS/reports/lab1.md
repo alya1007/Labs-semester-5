@@ -122,6 +122,8 @@ The Dependency Inversion Principle states that high-level modules should not dep
 
 - The `EmployeeRepository` class in the `DataAccess` folder depends on the `IEmployeeRepository` interface in the `Domain.Interfaces` folder. This allows for the `EmployeeRepository` class to be easily replaced with another class that implements the `IEmployeeRepository` interface. The same principle applies to the `EmployeeFactory` class in the `Domain` folder.
 
+#### Other comments
+
 In the project, I applied the Repository architectural pattern, which separated the data access logic (interaction with the database) from the business logic. I created an interface for the repository, and a concrete class that implements the interface. The `Menu` class is using dependency injection to get an instance of the `EmployeeRepository` class (and of the `EmployeeFactory` class):
 
 ```
