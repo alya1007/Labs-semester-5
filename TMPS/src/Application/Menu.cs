@@ -182,9 +182,9 @@ public class Menu
             return;
         }
 
-        employee.Name = newName;
-        employee.BaseSalary = newBaseSalary;
-        employee.BonusCoefficient = newBonusCoefficient;
+        employee.Name = newName == "" ? employee.Name : newName;
+        employee.BaseSalary = newBaseSalary == 0 ? employee.BaseSalary : newBaseSalary;
+        employee.BonusCoefficient = newBonusCoefficient == 0 ? employee.BonusCoefficient : newBonusCoefficient;
 
         _employeeRepository.UpdateEmployee(employee);
 

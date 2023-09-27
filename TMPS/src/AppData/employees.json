@@ -32,11 +32,11 @@
 		"BonusCoefficient": 0.2
 	},
 	{
-		"$type": "manager",
-		"TeamSize": 20,
-		"Id": "41f23121-a321-4eb5-874e-081a06502da7",
-		"Name": "Skyler",
-		"BaseSalary": 3000,
-		"BonusCoefficient": 0.15
+		"$type": "developer",
+		"Skills": ["Linux", "Git"],
+		"Id": "8d84d498-f86b-46ff-9674-701732251169",
+		"Name": "Andrew",
+		"BaseSalary": 10000,
+		"BonusCoefficient": 0.2
 	}
 ]
