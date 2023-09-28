@@ -37,19 +37,24 @@ def parse(url, max_pages, current_page, last_page, hrefs):
     return hrefs
 
 
+def write_to_file(hrefs):
+    with open("urls.txt", "w") as file:
+        for href in hrefs:
+            file.write(href + "\n")
+
+
 def main():
     url = "https://m.999.md/ro/list/real-estate/apartments-and-rooms"
-    max_pages = 2
+    max_pages = 3
     current_page = 1
     last_page = False
     hrefs = []
 
     parse(url, max_pages, current_page, last_page, hrefs)
 
-    for href in hrefs:
-        print(href)
-
     print(len(hrefs))
+
+    write_to_file(hrefs)
 
 
 if __name__ == "__main__":
