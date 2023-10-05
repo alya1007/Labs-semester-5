@@ -9,7 +9,7 @@ class Program
     static void Main(string[] args)
     {
         IEmployeeFactory employeeFactory = new EmployeeFactory();
-        IEmployeeRepository employeeRepository = new EmployeeRepository();
+        IEmployeeRepository employeeRepository = EmployeeRepository.Instance;
         Menu menu = new(employeeFactory, employeeRepository);
         menu.Show();
     }
