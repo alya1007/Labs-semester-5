@@ -2,7 +2,6 @@
 using TMPS.DataAccess.Employees;
 using TMPS.Domain.Factory;
 using TMPS.Domain.Interfaces;
-using TMPS.Domain.Models;
 
 namespace TMPS.Client;
 class Program

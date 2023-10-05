@@ -4,6 +4,7 @@ using TMPS.Domain.Factory;
 using TMPS.Domain.Interfaces;
 using TMPS.Domain.Models;
 using TMPS.Domain.Models.Abstractions;
+using TMPS.Domain.Models.Reports;
 using TMPS.UseCases.Employees;
 
 namespace TMPS.Application;
@@ -101,12 +102,14 @@ public class Menu
 
         while (!exitMenu)
         {
+            Console.WriteLine();
             Console.WriteLine("Employee Management Menu");
             Console.WriteLine("1. List Employees");
             Console.WriteLine("2. Add Employee");
             Console.WriteLine("3. Update Employee");
             Console.WriteLine("4. Delete Employee");
-            Console.WriteLine("5. Exit");
+            Console.WriteLine("5. Print Employee Report");
+            Console.WriteLine("6. Exit");
 
             int choice = Convert.ToInt32(Console.ReadLine());
 
@@ -115,11 +118,54 @@ public class Menu
                 .AddOption(2, AddEmployee)
                 .AddOption(3, UpdateEmployee)
                 .AddOption(4, DeleteEmployee)
-                .AddOption(5, () => exitMenu = true)
+                .AddOption(5, GetEmployeeReport)
+                .AddOption(6, () => exitMenu = true)
                 .SetDefaultFallback(() => Console.WriteLine("Invalid choice."));
 
             menuOptionsHandler.HandleOption(choice);
         }
+    }
+
+    private void GetEmployeeReport()
+    {
+        Console.WriteLine();
+        Console.WriteLine("1. Default report");
+        Console.WriteLine("2. Detailed report");
+        Console.WriteLine("3. Progress report");
+
+        int choice = Convert.ToInt32(Console.ReadLine());
+
+        OptionsHandler<int> reportTypesHandler = new OptionsHandler<int>()
+            .AddOption(1, () =>
+            {
+                Console.WriteLine("1. Default report");
+                Report report = ReportPrototypes.DefaultReport(GetEmployeeForReport()).Clone();
+                report.Print();
+            })
+            .AddOption(2, () =>
+            {
+                Console.WriteLine("2. Detailed report");
+                Report report = ReportPrototypes.DetailedReport(GetEmployeeForReport()).Clone();
+                report.Print();
+            })
+            .AddOption(3, () =>
+            {
+                Console.WriteLine("3. Progress report");
+                Report report = ReportPrototypes.ProgressReport(GetEmployeeForReport()).Clone();
+                report.Print();
+            })
+            .SetDefaultFallback(() => Console.WriteLine("Invalid choice."));
+
+        reportTypesHandler.HandleOption(choice);
+    }
+
+    private Employee GetEmployeeForReport()
+    {
+        Console.Write("Employee id: ");
+        string id = Console.ReadLine() ?? "";
+        Console.WriteLine();
+        var employee = _employeeRepository.GetEmployeeById(id);
+        return employee;
     }
 
 
