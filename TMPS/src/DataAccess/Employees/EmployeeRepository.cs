@@ -9,16 +9,15 @@ namespace TMPS.DataAccess.Employees
         private const string FilePath = "src/AppData/employees.json";
         private static EmployeeRepository? _instance;
 
-        public static EmployeeRepository Instance
+        private EmployeeRepository() { }
+
+        public static EmployeeRepository GetInstance()
         {
-            get
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new EmployeeRepository();
-                }
-                return _instance;
+                _instance = new EmployeeRepository();
             }
+            return _instance;
         }
 
         public List<Employee> GetAllEmployees()
