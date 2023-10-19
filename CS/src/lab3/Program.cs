@@ -59,7 +59,7 @@ class Program
         if (ciphertext == null) return;
 
         Console.Write($"Enter the key (word or sentence, length 6 to {ciphertext.Length}): ");
-        string? key = GetValidInput();
+        string? key = GetValidKey();
         if (key == null || key.Length < 6 || key.Length > ciphertext.Length) return;
 
         string plaintext = VigenereCipher.Decrypt(ciphertext, key);
@@ -78,6 +78,20 @@ class Program
             return null;
         }
         return input;
+    }
+
+    static string? GetValidKey()
+    {
+        string? key = Console.ReadLine();
+        if (key is null) return null;
+        else
+            key = key.ToUpper().Replace(" ", ""); ;
+        if (!IsAllLetters(key))
+        {
+            Console.WriteLine("Invalid input. Key should only contain letters.");
+            return null;
+        }
+        return key;
     }
 
     static bool IsAllLetters(string text)
