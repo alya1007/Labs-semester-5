@@ -56,17 +56,14 @@ def main():
     host = "127.0.0.1"
     port = 5000
 
-    request_home = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"
-    home_page_content = send_request(host, port, request_home)
-    home_data = {"content": home_page_content}
+    routes = ["/", "/about", "/contacts"]
 
-    request_about = "GET /about HTTP/1.1\r\nHost: localhost\r\n\r\n"
-    about_page_content = send_request(host, port, request_about)
-    about_data = {"content": about_page_content}
+    page_data = {}
 
-    request_contacts = "GET /contacts HTTP/1.1\r\nHost: localhost\r\n\r\n"
-    contacts_page_content = send_request(host, port, request_contacts)
-    contacts_data = {"content": contacts_page_content}
+    for route in routes:
+        request = f"GET {route} HTTP/1.1\r\nHost: localhost\r\n\r\n"
+        page_content = send_request(host, port, request)
+        page_data[route] = {"content": page_content}
 
     request_products = "GET /products HTTP/1.1\r\nHost: localhost\r\n\r\n"
     products_page_content = send_request(host, port, request_products)
@@ -82,9 +79,9 @@ def main():
         product = parse_product_page(product_page_content)
         product_details.append(product)
 
-    print("Home Page Data:", json.dumps(home_data, indent=4))
-    print("About Page Data:", json.dumps(about_data, indent=4))
-    print("Contacts Page Data:", json.dumps(contacts_data, indent=4))
+    print("Home Page Data:", json.dumps(page_data["/"], indent=4))
+    print("About Page Data:", json.dumps(page_data["/about"], indent=4))
+    print("Contacts Page Data:", json.dumps(page_data["/contacts"], indent=4))
 
     for product in product_details:
         print("Product Data:", json.dumps(product, indent=4))
