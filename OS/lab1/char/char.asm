@@ -1,8 +1,9 @@
 org 0x7c00
 
 start:
-    mov ah, 0x0e
+    mov ah, 0Ah
     mov al, 'e'
+    mov cx, 6
     int 0x10
 
 halt:
