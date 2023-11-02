@@ -10,7 +10,8 @@ class Program
     {
         IEmployeeFactory employeeFactory = new EmployeeFactory();
         IEmployeeRepository employeeRepository = EmployeeRepository.GetInstance();
-        Menu menu = new(employeeFactory, employeeRepository);
+        EmployeeRepositoryDecorator cachedEmployeeRepository = new EmployeeRepositoryCacheDecorator(employeeRepository);
+        Menu menu = new(employeeFactory, cachedEmployeeRepository);
         menu.Show();
     }
 }
