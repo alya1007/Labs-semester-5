@@ -5,7 +5,7 @@ msg db "Hello, World!", 0
 msg_len equ $-msg
 
 start:
-    mov ax, 0x1300
+    mov ax, 0x1300   ; BIOS video function to write a string
     mov bl, 0x02     ; Text color (green)
     mov cx, msg_len
     mov dh, 0x01     ; Row 1

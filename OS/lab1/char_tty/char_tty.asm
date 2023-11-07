@@ -1,5 +1,5 @@
 go:
-    mov AH, 0Eh
+    mov AH, 0Eh ; BIOS video function to display a character with teletype
     mov AL, 57h
     int 10h
 

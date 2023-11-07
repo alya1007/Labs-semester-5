@@ -1,7 +1,7 @@
 org 0x7c00
 
 start:
-    mov ah, 0Ah
+    mov ah, 0Ah ; BIOS video function to write character
     mov al, 'e'
     mov cx, 6
     int 0x10
