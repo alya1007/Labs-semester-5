@@ -1,6 +1,6 @@
 namespace TMPS.Domain.Interfaces
 {
-    public interface IEmployeeComponent
+    public interface ICompoundTeam
     {
         decimal CalculateSalary();
     }

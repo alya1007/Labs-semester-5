@@ -1,5 +1,4 @@
 ﻿using TMPS.Application;
-using TMPS.DataAccess.Departments;
 using TMPS.DataAccess.Employees;
 using TMPS.Domain.Factory;
 using TMPS.Domain.Interfaces;
@@ -12,7 +11,6 @@ class Program
         IEmployeeFactory employeeFactory = new EmployeeFactory();
         IEmployeeRepository employeeRepository = EmployeeRepository.GetInstance();
         EmployeeRepositoryDecorator cachedEmployeeRepository = new EmployeeRepositoryCacheDecorator(employeeRepository);
-        IDepartmentRepository departmentRepository = new DepartmentRepository();
         Menu menu = new(employeeFactory, cachedEmployeeRepository);
         menu.Show();
     }

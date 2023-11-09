@@ -110,7 +110,8 @@ public class Menu
             Console.WriteLine("3. Update Employee");
             Console.WriteLine("4. Delete Employee");
             Console.WriteLine("5. Print Employee Report");
-            Console.WriteLine("6. Exit");
+            Console.WriteLine("6. Calculate Salary of Team");
+            Console.WriteLine("7. Exit");
 
             int choice = Convert.ToInt32(Console.ReadLine());
 
@@ -120,11 +121,17 @@ public class Menu
                 .AddOption(3, UpdateEmployee)
                 .AddOption(4, DeleteEmployee)
                 .AddOption(5, GetEmployeeReport)
-                .AddOption(6, () => exitMenu = true)
+                .AddOption(6, CalculateSalaryOfTeam)
+                .AddOption(7, () => exitMenu = true)
                 .SetDefaultFallback(() => Console.WriteLine("Invalid choice."));
 
             menuOptionsHandler.HandleOption(choice);
         }
+    }
+
+    private void CalculateSalaryOfTeam()
+    {
+        throw new NotImplementedException();
     }
 
     private void GetEmployeeReport()
