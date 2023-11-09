@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using TMPS.DataAccess.Employees;
 using TMPS.Domain.Interfaces;
 using TMPS.Domain.Models.Abstractions;
@@ -5,9 +6,9 @@ using TMPS.UseCases.Employees;
 
 namespace TMPS.Domain.Models
 {
-    public class Team : ICompoundTeam
+    public class Team : IDepartment
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public List<Employee> Employees { get; set; } = new();
 
         public Team(string name)
@@ -20,7 +21,8 @@ namespace TMPS.Domain.Models
             decimal totalSalary = 0;
             foreach (var employee in Employees)
             {
-                totalSalary += SalaryCalculator.CalculateSalary(employee);
+                var bonus = employee.BonusCoefficient * employee.BaseSalary;
+                totalSalary += employee.BaseSalary + bonus;
             }
             return totalSalary;
         }

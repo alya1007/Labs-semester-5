@@ -3,25 +3,30 @@ using TMPS.UseCases.Employees;
 
 namespace TMPS.Domain.Models.Abstractions
 {
-    public class CompoundTeam : ICompoundTeam
+    public class Department : IDepartment
     {
         public string? Name { get; set; }
-        private List<ICompoundTeam> teams = new();
+        public List<IDepartment> Teams = new();
 
-        public void AddTeam(ICompoundTeam team)
+        public Department(string name)
         {
-            teams.Add(team);
+            Name = name;
         }
 
-        public void RemoveTeam(ICompoundTeam team)
+        public void AddTeam(IDepartment team)
         {
-            teams.Remove(team);
+            Teams.Add(team);
+        }
+
+        public void RemoveTeam(string teamName)
+        {
+            Teams.RemoveAll(team => team.Name == teamName);
         }
 
         public decimal CalculateSalary()
         {
             decimal totalSalary = 0;
-            foreach (var team in teams)
+            foreach (var team in Teams)
             {
                 totalSalary += team.CalculateSalary();
             }

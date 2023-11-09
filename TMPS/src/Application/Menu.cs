@@ -1,6 +1,4 @@
 using TMPS.Common;
-using TMPS.DataAccess.Employees;
-using TMPS.Domain.Factory;
 using TMPS.Domain.Interfaces;
 using TMPS.Domain.Models;
 using TMPS.Domain.Models.Abstractions;
@@ -12,6 +10,7 @@ namespace TMPS.Application;
 public class Menu
 {
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IDepartmentRepository _departmentRepository;
     private readonly IEmployeeFactory _employeeFactory;
     private const string DEVELOPER = "Developer";
     private const string MANAGER = "Manager";
@@ -21,10 +20,11 @@ public class Menu
     private readonly Dictionary<string, Action> _employeeRefiners = new();
     private Employee? _employee;
 
-    public Menu(IEmployeeFactory employeeFactory, IEmployeeRepository employeeRepository)
+    public Menu(IEmployeeFactory employeeFactory, IEmployeeRepository employeeRepository, IDepartmentRepository departmentRepository)
     {
         _employeeFactory = employeeFactory;
         _employeeRepository = employeeRepository;
+        _departmentRepository = departmentRepository;
 
         _employeeFactories.Add(DEVELOPER, _employeeFactory.CreateDeveloper);
         _employeeFactories.Add(MANAGER, _employeeFactory.CreateManager);
@@ -99,39 +99,127 @@ public class Menu
 
     public void Show()
     {
-        bool exitMenu = false;
-
-        while (!exitMenu)
+        var menuOptions = new List<string>()
         {
-            Console.WriteLine();
-            Console.WriteLine("Employee Management Menu");
-            Console.WriteLine("1. List Employees");
-            Console.WriteLine("2. Add Employee");
-            Console.WriteLine("3. Update Employee");
-            Console.WriteLine("4. Delete Employee");
-            Console.WriteLine("5. Print Employee Report");
-            Console.WriteLine("6. Calculate Salary of Team");
-            Console.WriteLine("7. Exit");
+            "List Employees",
+            "Add Employee",
+            "Update Employee",
+            "Delete Employee",
+            "Print Employee Report",
+            "List All Departments",
+            "Add Department",
+            "Remove Team from Department",
+            "Add Team to Department",
+            "Calculate Salary of Department",
+            "Exit"
+        };
 
-            int choice = Convert.ToInt32(Console.ReadLine());
+        var menuActions = new List<Action>()
+        {
+            ListEmployees,
+            AddEmployee,
+            UpdateEmployee,
+            DeleteEmployee,
+            GetEmployeeReport,
+            ListDepartments,
+            AddDepartment,
+            RemoveTeamFromDepartment,
+            AddTeamToDepartment,
+            CalculateSalaryOfDepartment,
+            () => Environment.Exit(0)
+        };
 
-            OptionsHandler<int> menuOptionsHandler = new OptionsHandler<int>()
-                .AddOption(1, ListEmployees)
-                .AddOption(2, AddEmployee)
-                .AddOption(3, UpdateEmployee)
-                .AddOption(4, DeleteEmployee)
-                .AddOption(5, GetEmployeeReport)
-                .AddOption(6, CalculateSalaryOfTeam)
-                .AddOption(7, () => exitMenu = true)
-                .SetDefaultFallback(() => Console.WriteLine("Invalid choice."));
-
-            menuOptionsHandler.HandleOption(choice);
+        var menu = new MenuHandler(menuOptions, menuActions);
+        menu.ShowMenu();
+    }
+    private void ListDepartments()
+    {
+        var departments = _departmentRepository.GetDepartments();
+        foreach (var department in departments)
+        {
+            System.Console.WriteLine("Department " + department.Name);
         }
     }
 
-    private void CalculateSalaryOfTeam()
+    private void CalculateSalaryOfDepartment()
     {
-        throw new NotImplementedException();
+        System.Console.WriteLine("Enter department name: ");
+        string departmentName = Console.ReadLine() ?? "";
+        Department department = _departmentRepository.GetDepartmentByName(departmentName);
+
+        System.Console.WriteLine("Total salary of department: " + department.CalculateSalary());
+    }
+
+    private void AddTeamToDepartment()
+    {
+        System.Console.WriteLine("Enter department name: ");
+        string departmentName = Console.ReadLine() ?? "";
+        Department department = _departmentRepository.GetDepartmentByName(departmentName);
+
+        var team = CreateTeam();
+        department.AddTeam(team);
+
+        _departmentRepository.UpdateDepartment(department);
+    }
+
+    private void RemoveTeamFromDepartment()
+    {
+        System.Console.WriteLine("Enter department name: ");
+        string departmentName = Console.ReadLine() ?? "";
+        Department department = _departmentRepository.GetDepartmentByName(departmentName);
+
+        System.Console.WriteLine("Enter team name: ");
+        string teamName = Console.ReadLine() ?? "";
+        department.RemoveTeam(teamName);
+
+        _departmentRepository.UpdateDepartment(department);
+    }
+
+    private void AddDepartment()
+    {
+        System.Console.WriteLine("Enter department name: ");
+        string departmentName = Console.ReadLine() ?? "";
+        Department department = new Department(departmentName);
+
+        bool addTeam = true;
+
+        while (addTeam)
+        {
+            System.Console.WriteLine("Add team? (y/n): ");
+            string choice = Console.ReadLine() ?? "";
+            addTeam = choice == "y" ? true : false;
+            if (addTeam)
+            {
+                var team = CreateTeam();
+                department.AddTeam(team);
+            }
+        }
+
+        _departmentRepository.AddDepartment(department);
+
+    }
+
+    private IDepartment CreateTeam()
+    {
+        System.Console.WriteLine("Enter team name: ");
+        string teamName = Console.ReadLine() ?? "";
+        Team team = new Team(teamName);
+
+        bool addEmployee = true;
+        while (addEmployee)
+        {
+            System.Console.WriteLine("Add employee? (y/n): ");
+            string choice = Console.ReadLine() ?? "";
+            addEmployee = choice == "y" ? true : false;
+            if (addEmployee)
+            {
+                var employeeType = GetEmployeeType();
+                var employee = CreateEmployee(employeeType);
+                team.Employees.Add(employee);
+            }
+        }
+
+        return team;
     }
 
     private void GetEmployeeReport()
@@ -194,6 +282,13 @@ public class Menu
 
     private void AddEmployee()
     {
+        var employeeType = GetEmployeeType();
+        var employee = CreateEmployee(employeeType);
+        _employeeRepository.AddEmployee(employee);
+    }
+
+    private string GetEmployeeType()
+    {
         Console.Write("Enter employee type (Developer, Manager, HRManager): ");
         string employeeType = Console.ReadLine() ?? "";
         while (string.IsNullOrEmpty(employeeType) || !_employeeTypes.Contains(employeeType))
@@ -202,8 +297,7 @@ public class Menu
             Console.Write("Enter employee type (Developer, Manager, HRManager): ");
             employeeType = Console.ReadLine() ?? "";
         }
-        var employee = CreateEmployee(employeeType);
-        _employeeRepository.AddEmployee(employee);
+        return employeeType;
     }
 
     private void UpdateEmployee()

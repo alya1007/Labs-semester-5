@@ -125,6 +125,74 @@ IEmployeeRepository employeeRepository = EmployeeRepository.GetInstance();
 EmployeeRepositoryDecorator cachedEmployeeRepository = new EmployeeRepositoryCacheDecorator(employeeRepository);
 ```
 
+### Composite
+
+Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly. In my project, I created a hierarchal system of compound teams, that can contain other teams or employees. The classes that form the structure of the Composite pattern are:
+
+- `Component` - The Component interface describes operations that are common to both simple and complex elements of the tree. In my project, this is the `ICompoundTeam` class, which has the method `CalculateSalary`, that can calculate the total salary of a team, but also the salary of a single employee.
+
+```csharp
+    public interface ICompoundTeam
+    {
+        decimal CalculateSalary();
+    }
+```
+
+- `Leaf` - The Leaf is a basic element of a tree. Usually, leaf components end up doing most of the real work, since they don’t have anyone to delegate the work to. In my project, the leafs are the `Employee` class, which implements `CalculateSalary` in the following way:
+
+```csharp
+    public virtual decimal CalculateSalary()
+    {
+        return SalaryCalculator.CalculateSalary(this);
+    }
+```
+
+And another leaf is the `Team` class, which implements `CalculateSalary` in the following way:
+
+```csharp
+    public decimal CalculateSalary()
+    {
+        decimal totalSalary = 0;
+        foreach (var employee in Employees)
+        {
+            totalSalary += SalaryCalculator.CalculateSalary(employee);
+        }
+        return totalSalary;
+    }
+```
+
+- `Composite` - The Container (aka composite) is an element that has sub-elements: leaves or other containers. A container doesn’t know the concrete classes of its children. It works with all sub-elements only via the component interface. Upon receiving a request, a container delegates the work to its sub-elements, processes intermediate results and then returns the final result to the client. In my project, the composite class is the `CompoundTeam` class:
+
+```csharp
+    public class CompoundTeam : ICompoundTeam
+    {
+        public string? Name { get; set; }
+        private List<ICompoundTeam> teams = new();
+
+        public void AddTeam(ICompoundTeam team)
+        {
+            teams.Add(team);
+        }
+
+        public void RemoveTeam(ICompoundTeam team)
+        {
+            teams.Remove(team);
+        }
+
+        public decimal CalculateSalary()
+        {
+            decimal totalSalary = 0;
+            foreach (var team in teams)
+            {
+                totalSalary += team.CalculateSalary();
+            }
+            return totalSalary;
+        }
+    }
+```
+
+- `Client` - The Client works with all elements through the component interface. As a result, the client can work in the same way with both simple or complex elements of the tree.
+
 ## Conclusion
 
 In this laboratory work, I studied the creational design patterns and implemented some of them in my project. I used the factory method for creating employees, the singleton pattern for creating the employee repository, the builder pattern for creating the menu options, and the prototype pattern for cloning reports. I learned that the creational design patterns are very useful for creating objects in a more flexible way. They allow us to create objects without specifying their concrete classes, and this way, we can change the nature of the objects according to the nature of the program. The creational design patterns also help us to avoid tight coupling between the classes.
