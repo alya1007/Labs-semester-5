@@ -7,15 +7,15 @@ ORG 7c00H
 start:
     mov ah, 0; set the video mode
     mov al, 3; 80x25 text mode
-    int 10h
+    int 10h ; Video BIOS interrupt to set the mode
 
-    mov cx, 0; will be used as character counter
-    mov bx, buffer; will be used as buffer pointer
+    mov cx, 0; character counter
+    mov bx, buffer; buffer pointer
 
-    ; read a character from the keyboard
-    read_char:
-    mov ah, 0
-    int 16h
+; read a character from the keyboard
+read_char:
+    mov ah, 0 ; Reset AH for keyboard interrupt
+    int 16h ; BIOS interrupt to read a character from the keyboard
 
     cmp al, BACKSPACE; if the character is backspace
     je .call_handle_backspace; jump to handle_backspace
@@ -36,11 +36,6 @@ start:
     call handle_symbol; handle the character
     jmp read_char; read another character
 
-clear_screen:
-    mov ah, 0; set the video mode
-    mov al, 3; 80x25 text mode
-    int 10h
-
 handle_symbol:
     mov [bx], al; store the character in the buffer
     inc bx; increment the buffer pointer
@@ -48,13 +43,18 @@ handle_symbol:
     inc byte [cursor_x]; increment the cursor x coordinate
     pusha; save all registers
     mov ah, 0eh; print the character
-    int 10h
+    int 10h; Video BIOS interrupt to print the character
     popa; restore all registers
-    ret
+    ret; Return from the function
 
 handle_backspace:
-    cmp cx, 0; if the character counter is 0, do nothing
+    ; If already at the top line, do nothing
+    cmp byte [cursor_coords], 0
     je .backspace_done
+
+    ; If character counter is 0, go on previous line
+    cmp cx, 0
+    je .backspace_prev_line
 
     dec bx; decrement the buffer pointer
     dec cx; decrement the character counter
@@ -71,28 +71,39 @@ handle_backspace:
     mov al, ' '; print a space
     int 10h
     popa; restore all registers
+    ret
+
+    .backspace_prev_line:
+    dec byte [row]; decrement the row number
+    dec byte [cursor_y]; decrement the cursor y coordinate
+    mov ah, 02H; set the cursor position
+    mov bh, 0; page number
+    mov dx, [cursor_coords]; cursor coordinates
+    int 10h
+    ret
+
     .backspace_done:
+    cmp byte [row], 0
+    jne .backspace_prev_line
+    ret
+
+next_line:
+    inc byte [row]; increment the row number
+    inc byte [cursor_y]; increment the cursor y coordinate
     ret
 
 handle_enter:
-    inc byte [row]; increment the row number
-    inc byte [cursor_y]; increment the cursor y coordinate
-    ; Print the buffer
+    call next_line
 
-    mov ax, 1300H; print string
-    mov bh, 0; page number
-    mov bl, 07H; text attribute
-    ; cx = number of characters to print
-    mov dh, [row];
-    mov dl, 0; column
-    mov bp, buffer; pointer to string
-    int 10h
+    ; if the line is empty
+    cmp cx, 0
+    je .clear_buffer
 
-    mov byte [cursor_x], 0; set the cursor x coordinate to 0
-    inc byte [row]; increment the row number
-    inc byte [row]; increment the row number
-    inc byte [cursor_y]; increment the cursor y coordinate
-    inc byte [cursor_y]; increment the cursor y coordinate
+    ; if the line has characters
+    call print_string
+    jmp .clear_buffer
+
+    .clear_buffer:
     mov bx, buffer; set the buffer pointer to the beginning of the buffer
     xor cx, cx; set the character counter to 0
     pusha; save all registers
@@ -101,7 +112,7 @@ handle_enter:
     mov bh, 0; page number
     mov dx, [cursor_coords]; cursor coordinates
     int 10h
-    ; clear line
+
     mov ah, 0AH; print the character at the cursor position
     mov bh, 0; page number
     mov cx, 80; number of times to print the character
@@ -111,14 +122,19 @@ handle_enter:
     ret
 
 print_string:
-    lodsb
-    cmp al, 0
-    je buffer_empty
-    int 0x10
-    jmp print_string
+    mov ax, 1300H; print string
+    mov bh, 0; page number
+    mov bl, 07H; text attribute
+    mov dh, [row];
+    mov dl, 0; column
+    mov bp, buffer; pointer to string
+    int 10h
 
-buffer_empty:
+    mov byte [cursor_x], 0; set the cursor x coordinate to 0
+    call next_line
+    call next_line
     ret
+
 
 cursor_coords:
 cursor_x db 0
