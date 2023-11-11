@@ -87,38 +87,26 @@ handle_backspace:
     jne .backspace_prev_line
     ret
 
-next_line:
-    inc byte [row]; increment the row number
-    inc byte [cursor_y]; increment the cursor y coordinate
-    ret
-
 handle_enter:
     call next_line
 
-    ; if the line is empty
     cmp cx, 0
-    je .clear_buffer
+    je .enter_done
 
-    ; if the line has characters
     call print_string
-    jmp .clear_buffer
 
-    .clear_buffer:
-    mov bx, buffer; set the buffer pointer to the beginning of the buffer
-    xor cx, cx; set the character counter to 0
-    pusha; save all registers
+    .enter_done:
+    ret
 
+next_line:
+    inc byte [row]; increment the row number
+    inc byte [cursor_y]; increment the cursor y coordinate
+    pusha
     mov ah, 02H; set the cursor position
     mov bh, 0; page number
     mov dx, [cursor_coords]; cursor coordinates
     int 10h
-
-    mov ah, 0AH; print the character at the cursor position
-    mov bh, 0; page number
-    mov cx, 80; number of times to print the character
-    mov al, ' '; print a space
-    int 10h
-    popa; restore all registers
+    popa
     ret
 
 print_string:
@@ -133,8 +121,11 @@ print_string:
     mov byte [cursor_x], 0; set the cursor x coordinate to 0
     call next_line
     call next_line
-    ret
 
+    mov bx, buffer; set the buffer pointer to the beginning of the buffer
+    mov cx, 0
+
+    ret
 
 cursor_coords:
 cursor_x db 0
