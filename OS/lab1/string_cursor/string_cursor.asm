@@ -1,7 +1,7 @@
 BITS 16
 ORG 0x7c00
 
-msg db "Hello, World!", 0
+msg db "Hello, World+",0
 msg_len equ $-msg
 
 start:
