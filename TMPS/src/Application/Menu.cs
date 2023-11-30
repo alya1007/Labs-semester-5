@@ -199,7 +199,7 @@ public class Menu
 
     }
 
-    private IDepartment CreateTeam()
+    private IWorkUnit CreateTeam()
     {
         System.Console.WriteLine("Enter team name: ");
         string teamName = Console.ReadLine() ?? "";

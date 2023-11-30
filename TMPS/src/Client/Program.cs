@@ -1,23 +1,55 @@
-﻿using TMPS.Application;
+﻿using System.Collections;
+using TMPS.Application;
 using TMPS.DataAccess.Departments;
 using TMPS.DataAccess.Employees;
 using TMPS.Domain.Factory;
 using TMPS.Domain.Interfaces;
-using TMPS.Domain.Models;
-using TMPS.Domain.Models.Abstractions;
 
-namespace TMPS.Client;
-class Program
+
+// IEmployeeFactory employeeFactory = new EmployeeFactory();
+// IEmployeeRepository employeeRepository = EmployeeRepository.GetInstance();
+// IDepartmentRepository departmentRepository = DepartmentRepository.GetInstance();
+
+// EmployeeRepositoryDecorator cachedEmployeeRepository = new EmployeeRepositoryCacheDecorator(employeeRepository);
+
+// Menu menu = new(employeeFactory, cachedEmployeeRepository, departmentRepository);
+// menu.Show();
+
+
+
+var instance = new MyEnumerable();
+
+foreach (var item in instance)
 {
-    static void Main(string[] args)
+    Console.WriteLine(item);
+}
+
+class MyEnumerable : IEnumerable<int>, IEnumerator<int>
+{
+    public int Current { get; private set; } = 0;
+
+    object IEnumerator.Current => Current;
+
+    public void Dispose() => Reset();
+
+    public IEnumerator<int> GetEnumerator()
     {
-        IEmployeeFactory employeeFactory = new EmployeeFactory();
-        IEmployeeRepository employeeRepository = EmployeeRepository.GetInstance();
-        IDepartmentRepository departmentRepository = DepartmentRepository.GetInstance();
+        return this;
+    }
 
-        EmployeeRepositoryDecorator cachedEmployeeRepository = new EmployeeRepositoryCacheDecorator(employeeRepository);
+    public bool MoveNext()
+    {
+        Current++;
+        return Current < 10;
+    }
 
-        Menu menu = new(employeeFactory, cachedEmployeeRepository, departmentRepository);
-        menu.Show();
+    public void Reset()
+    {
+        Current = 0;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

@@ -7,7 +7,7 @@ namespace TMPS.Domain.Models.Abstractions
     [JsonDerivedType(typeof(Developer), typeDiscriminator: "developer")]
     [JsonDerivedType(typeof(Manager), typeDiscriminator: "manager")]
     [JsonDerivedType(typeof(HRManager), typeDiscriminator: "hrmanager")]
-    public class Employee : IDepartment
+    public class Employee : IWorkUnit
     {
         public Guid Id { get; set; }
         public string? Name { get; set; }
