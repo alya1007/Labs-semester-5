@@ -242,6 +242,87 @@ public class MenuHandler
 
 ```
 
+### Strategy
+
+Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable. The Strategy pattern suggests that you take a class that does something specific in a lot of different ways and extract all of these algorithms into separate classes called strategies. The original class, called context, must have a field for storing a reference to one of the strategies. The context delegates the work to a linked strategy object instead of executing it on its own. The structure of this pattern is the following:
+
+- `Strategy` - The Strategy interface is common to all concrete strategies. It declares a method the context uses to execute a strategy. In my project, I use the `ISalaryCalculator` interface as a strategy:
+
+```csharp
+public interface ISalaryCalculator
+{
+    decimal CalculateSalary(Employee employee);
+}
+```
+
+- `Context` - The Context maintains a reference to one of the concrete strategies and communicates with this object only via the strategy interface. In my project, I use the `Employee` class as a context. It has the field that behaves as a reference to the default strategy for calculating the Salary (`DefaultSalaryCalculator`):
+
+```csharp
+private ISalaryCalculator salaryCalculator = new DefaultSalaryCalculator();
+```
+
+Also, we can change the strategy at runtime by setting the value of the property `SalaryCalculator`:
+
+```csharp
+public ISalaryCalculator SalaryCalculator
+{
+    get => salaryCalculator;
+    set => salaryCalculator = value ?? throw new ArgumentNullException(nameof(value));
+}
+```
+
+And there is the method that uses the strategy to calculate the salary:
+
+```csharp
+public virtual decimal CalculateSalary()
+{
+    return salaryCalculator.CalculateSalary(this);
+}
+
+```
+
+- `Concrete Strategies` - Concrete Strategies implement different variations of an algorithm the context uses. In my project, I have two concrete strategies: `DefaultSalaryCalculator` and `ManagerSalaryCalculator`:
+
+```csharp
+public class DefaultSalaryCalculator : ISalaryCalculator
+{
+    public decimal CalculateSalary(Employee employee)
+    {
+        return employee.BaseSalary + employee.BonusCoefficient * employee.BaseSalary;
+    }
+}
+
+public class ManagerSalaryCalculator : ISalaryCalculator
+{
+    public decimal CalculateSalary(Employee employee)
+    {
+        if (employee is Manager manager && manager.TeamSize > 10) return employee.BaseSalary + employee.BonusCoefficient * employee.BaseSalary + 1000;
+        else return employee.BaseSalary + employee.BonusCoefficient * employee.BaseSalary;
+    }
+}
+
+```
+
+- `Client` - The Client creates a specific strategy object and passes it to the context. The context exposes a setter which lets clients replace the strategy associated with the context at runtime. In my project, I use the `Menu` class as a client. It has the method that changes the strategy for calculating the salary:
+
+```csharp
+private void ListEmployees()
+{
+    var employees = _employeeRepository.GetAllEmployees();
+    foreach (var employee in employees)
+    {
+        // ...
+        if (employee is Manager)
+        {
+            employee.SalaryCalculator = new ManagerSalaryCalculator();
+        }
+        Console.WriteLine("Salary: " + employee.CalculateSalary());
+        Console.WriteLine();
+    }
+}
+
+```
+
 ## Conclusion
 
-In this laboratory work, I studied and understood the Structural Design Patterns. I implemented 4 structural design patterns in my project: Decorator, Composite, Facade and Bridge. I learned how to use the Decorator to create a caching mechanism for the `EmployeeRepository`, how to use the Composite to create a hierarchal system of compound departments, that can contain other teams or employees, how to use the Facade to create a simplified interface for the `EmployeeRepository` and `DepartmentRepository` and how to use the Bridge to separate the `EmployeeRepository` and `DepartmentRepository` classes into two hierarchies: abstraction and implementation.
+Behavioral design patterns in software engineering play a pivotal role in enhancing the flexibility, communication, and reusability of code by focusing on the interaction between objects and the delegation of responsibilities. These patterns aid in creating maintainable, extensible, and understandable software solutions by addressing various communication patterns among objects. The behavioral design patterns are concerned with the interaction and responsibility of objects. In my project, I used the Iterator, Command, and Strategy patterns. The Iterator pattern allowed me to traverse the collections of objects without exposing their underlying representation. The Command pattern allowed me to encapsulate the requests as objects and the Strategy pattern allowed me to define different strategies for calculating the salary of employees.
