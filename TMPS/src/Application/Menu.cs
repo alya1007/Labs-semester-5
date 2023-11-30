@@ -3,6 +3,7 @@ using TMPS.Domain.Interfaces;
 using TMPS.Domain.Models;
 using TMPS.Domain.Models.Abstractions;
 using TMPS.Domain.Models.Reports;
+using TMPS.Domain.Strategies;
 using TMPS.UseCases.Employees;
 
 namespace TMPS.Application;
@@ -303,7 +304,11 @@ public class Menu
             Console.WriteLine("Position: " + employee.GetType().Name);
             Console.WriteLine("Base salary: " + employee.BaseSalary);
             Console.WriteLine("Bonus coefficient: " + employee.BonusCoefficient);
-            Console.WriteLine("Salary: " + SalaryCalculator.CalculateSalary(employee));
+            if (employee is Manager)
+            {
+                employee.SalaryCalculator = new ManagerSalaryCalculator();
+            }
+            Console.WriteLine("Salary: " + employee.CalculateSalary());
             Console.WriteLine();
         }
     }

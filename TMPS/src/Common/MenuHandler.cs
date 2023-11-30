@@ -4,23 +4,23 @@ namespace TMPS.Common;
 
 public class MenuHandler
 {
-    private readonly List<string> _options;
-    private readonly List<Action> _actions;
+    private readonly List<string> _titles;
+    private readonly List<Action> _commands;
 
-    public MenuHandler(List<string> options, List<Action> actions)
+    public MenuHandler(List<string> titles, List<Action> commands)
     {
-        _options = options;
-        _actions = actions;
+        _titles = titles;
+        _commands = commands;
     }
 
     public void ShowMenu()
     {
         var menu = new ConsoleMenu();
-        foreach (var option in _options)
+        foreach (var option in _titles)
         {
             menu.Add(option, () =>
             {
-                _actions[_options.IndexOf(option)]();
+                _commands[_titles.IndexOf(option)]();
             });
         }
         menu.Configure(config =>

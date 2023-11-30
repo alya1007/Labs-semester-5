@@ -9,7 +9,7 @@
 	},
 	{
 		"$type": "manager",
-		"TeamSize": 10,
+		"TeamSize": 20,
 		"Id": "e90f896c-9aa3-431a-a6a3-15f9aae150a3",
 		"Name": "Jane Doe",
 		"BaseSalary": 2000,
