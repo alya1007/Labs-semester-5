@@ -111,6 +111,7 @@ public class Menu
             "Remove Team from Department",
             "Add Team to Department",
             "Calculate Salary of Department",
+            "Get Developer By Skill",
             "Exit"
         };
 
@@ -126,12 +127,39 @@ public class Menu
             RemoveTeamFromDepartment,
             AddTeamToDepartment,
             CalculateSalaryOfDepartment,
+            GetDeveloperBySkill,
             () => Environment.Exit(0)
         };
 
         var menu = new MenuHandler(menuOptions, menuActions);
         menu.ShowMenu();
     }
+
+    private void GetDeveloperBySkill()
+    {
+        Console.WriteLine("Enter skill: ");
+        string skill = Console.ReadLine() ?? "";
+        var departments = _departmentRepository.GetDepartments();
+        foreach (var department in departments)
+        {
+            IEnumerator<IWorkUnit> departmentEnumerator = department.GetEnumerator();
+            while (departmentEnumerator.MoveNext())
+            {
+                if (departmentEnumerator.Current is Team team)
+                {
+                    IEnumerator<IWorkUnit> teamEnumerator = team.GetEnumerator();
+                    while (teamEnumerator.MoveNext())
+                    {
+                        if (teamEnumerator.Current is Developer developer && developer.Skills.Contains(skill))
+                        {
+                            Console.WriteLine("Developer " + developer.Name + " has skill " + skill);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void ListDepartments()
     {
         var departments = _departmentRepository.GetDepartments();
