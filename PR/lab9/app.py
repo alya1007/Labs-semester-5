@@ -3,6 +3,7 @@ from ftplib import FTP
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -24,12 +25,14 @@ def submit():
     body = request.form.get("emailBody")
     attached_file = request.files["emailAttachment"]
 
-    # Upload file to FTP server
     ftp = FTP(ftp_server)
     ftp.login(ftp_user, ftp_password)
 
-    with open(attached_file.filename, "rb") as file:
-        ftp.storbinary(f"STOR {attached_file.filename}", file)
+    # Stream the file contents to FTP server
+    with BytesIO() as file_stream:
+        attached_file.save(file_stream)
+        file_stream.seek(0)  # Reset stream position
+        ftp.storbinary(f"STOR {attached_file.filename}", file_stream)
 
     # Construct email body with file URL
     file_url = f"ftp://{ftp_user}@{ftp_server}/{attached_file.filename}"
