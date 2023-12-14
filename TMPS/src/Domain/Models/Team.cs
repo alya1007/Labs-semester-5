@@ -8,7 +8,7 @@ using TMPS.UseCases.Employees;
 
 namespace TMPS.Domain.Models
 {
-    public class Team : IWorkUnit, IEnumerable<IWorkUnit>, ITeamEnumerator
+    public class Team : IWorkUnit, IEnumerable<IWorkUnit>, IEnumerator<IWorkUnit>
     {
         public string? Name { get; set; }
         public List<IWorkUnit> Employees { get; set; } = new();

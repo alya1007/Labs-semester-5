@@ -5,7 +5,7 @@ using TMPS.UseCases.Employees;
 
 namespace TMPS.Domain.Models.Abstractions
 {
-    public class Department : IWorkUnit, IEnumerable<IWorkUnit>, IDepartmentEnumerator
+    public class Department : IWorkUnit, IEnumerable<IWorkUnit>, IEnumerator<IWorkUnit>
     {
         public string? Name { get; set; }
 
