@@ -1,0 +1,75 @@
+body {
+	margin: 0;
+	background-color: #313439;
+	font-family: "Posterama 2001 W04 Regular";
+	text-align: center;
+}
+
+h1 {
+	color: white;
+	font-family: "Posterama 2001 W04 Bold";
+}
+
+label {
+	color: #4f5257;
+	font-size: 0.8rem;
+}
+
+input {
+	border: none;
+	border-bottom: 2px solid #4f5257;
+	background-color: transparent;
+	padding: 10px;
+	font-size: 1rem;
+	color: white;
+	font-family: "Afacad", sans-serif;
+	font-family: "Urbanist", sans-serif;
+}
+
+input:focus {
+	outline: none;
+	background-color: transparent;
+	border-bottom-color: rgb(179, 179, 179);
+}
+
+input:active {
+	background-color: transparent;
+	border-bottom-color: rgb(179, 179, 179);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	-webkit-box-shadow: 0 0 0 30px #313439 inset !important;
+}
+
+input:-webkit-autofill {
+	-webkit-text-fill-color: white !important;
+}
+
+input::placeholder {
+	color: #4f5257;
+}
+
+input[type="submit"] {
+	background-color: #d94d5e;
+	color: white;
+	border: none;
+	padding: 10px;
+	font-size: 1rem;
+	font-family: "Afacad", sans-serif;
+	font-family: "Urbanist", sans-serif;
+	cursor: pointer;
+}
+
+.form__container {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+}
+
+.input__container {
+	display: flex;
+	flex-direction: column;
+}
