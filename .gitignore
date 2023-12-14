@@ -78,3 +78,7 @@ __sapper__/
 
 # Ignore node_modules inside the A/src folder
 CS/src/node_modules/
+
+# Ignore .env file inside the PR/lab9 folder
+PR/lab9/.env
+/PR/lab9/.env
