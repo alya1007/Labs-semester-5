@@ -44,7 +44,7 @@ def submit():
     # Send email
     send_email(recipient, subject, body_with_url)
 
-    return "Email sent successfully!"
+    return render_template("submit.html")
 
 
 def send_email(recipient, subject, body):
