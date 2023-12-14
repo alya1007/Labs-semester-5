@@ -8,6 +8,7 @@ body {
 h1 {
 	color: white;
 	font-family: "Posterama 2001 W04 Bold";
+	margin-top: 130px;
 }
 
 label {
@@ -56,17 +57,35 @@ input[type="submit"] {
 	background-color: #d94d5e;
 	color: white;
 	border: none;
-	padding: 10px;
+	border-radius: 2px;
+	padding: 10px 60px;
+	margin-top: 70px;
 	font-size: 1rem;
 	font-family: "Afacad", sans-serif;
 	font-family: "Urbanist", sans-serif;
 	cursor: pointer;
+	transition: background-color 0.3s ease-in-out;
+}
+
+input[type="submit"]:hover {
+	background-color: #cc394d;
+}
+
+input[type="submit"]:active {
+	background-color: #b32f42;
+}
+
+input[type="submit"]:focus {
+	border: 2px solid white;
 }
 
 .form__container {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
-	gap: 10px;
+	gap: 50px;
+	width: 50%;
+	margin: auto;
+	margin-top: 70px;
 }
 
 .input__container {
