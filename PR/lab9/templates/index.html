@@ -17,32 +17,43 @@
 
 <body>
     <h1>Email Client</h1>
-    <form action="/submit" method="post">
+    <form action="/submit" method="post" autocomplete="off">
         <div class="form__container">
             <div class="input__container">
-                <label for="inputField">Mail recipient address</label>
-                <input type="text" id="inputField" name="inputField">
+                <label for="emailAddress">Mail recipient address</label>
+                <input type="email" id="emailAddress" name="emailAddress">
             </div>
             <div class="input__container">
-
-                <label for="inputField">Subject of the e-mail</label>
-                <input type="text" id="inputField" name="inputField">
+                <label for="emailSubject">Subject of the e-mail</label>
+                <input type="text" id="emailSubject" name="emailSubject" autocomplete="new-email">
             </div>
             <div class="input__container">
-
-                <label for="inputField">Body of the email</label>
-                <input type="text" id="inputField" name="inputField">
+                <label for="emailBody">Body of the email</label>
+                <input type="text" id="emailBody" name="emailBody" autocomplete="new-email">
             </div>
             <div class="input__container">
-                <div class="input__container">
-
-                    <label for="inputField">The file attached</label>
-                    <input type="text" id="inputField" name="inputField">
+                <div class="input__container input__container-file">
+                    <input type="file" id="emailAttachment" name="emailAttachment" hidden />
+                    <label for="emailAttachment" class="custom-file-upload">The file attached</label>
+                    <span id="file-chosen">No file chosen</span>
                 </div>
             </div>
         </div>
         <input type="submit" value="Submit">
     </form>
+    <script>
+        const emailAttachment = document.getElementById('emailAttachment');
+        const fileChosen = document.getElementById('file-chosen');
+
+        emailAttachment.addEventListener('change', function (event) {
+            if (event.target.files.length > 0) {
+                fileChosen.textContent = event.target.files[0].name;
+                fileChosen.style.color = 'white';
+            } else {
+                fileChosen.textContent = 'No file chosen';
+            }
+        });
+    </script>
 </body>
 
 </html>
