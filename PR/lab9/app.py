@@ -4,9 +4,12 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from io import BytesIO
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 
+load_dotenv()
 
 ftp_server = "138.68.98.108"
 ftp_user = "yourusername"
@@ -49,7 +52,7 @@ def send_email(recipient, subject, body):
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
     sender_email = "alea.konj@gmail.com"
-    sender_password = "mpcw lviq lyye nldv"
+    sender_password = os.environ.get("SMTP_PASSWORD")
 
     # Setup the MIME
     message = MIMEMultipart()
