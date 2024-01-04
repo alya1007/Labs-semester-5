@@ -6,9 +6,6 @@ _start:
     mov [add1], ax
     mov [add2], bx
 
-    mov si, [add1]
-    mov ds, [add2]
-
     mov byte [string], 0
 
     mov word [line_number], 10
@@ -36,8 +33,6 @@ menu:
     ; print command disclaimer
     call find_current_cursor_position
     
-    mov ax, [add2]
-	mov es, ax
     mov bh, 0
 	mov bl, 07h
     mov cx, disclaimer_length
@@ -55,8 +50,6 @@ menu:
     ; print command disclaimer
     call find_current_cursor_position
     
-    mov ax, [add2]
-	mov es, ax
     mov bh, 0
 	mov bl, 07h
     mov cx, reboot_prompt_length
@@ -80,8 +73,6 @@ menu:
     ; input string
     call find_current_cursor_position
     
-    mov ax, [add2]
-	mov es, ax
     mov bh, 0
 	mov bl, 07h
     mov cx, string_prompt_length
@@ -108,8 +99,6 @@ menu:
     ; input character
     call find_current_cursor_position
     
-    mov ax, [add2]
-	mov es, ax
     mov bh, 0
 	mov bl, 07h
     mov cx, character_prompt_length
@@ -136,8 +125,6 @@ menu:
     ; display result prompt
     call find_current_cursor_position
 
-    mov ax, [add2]
-    mov es, ax
     mov bh, 0
     mov bl, 07h
     mov cx, result_prompt_length
@@ -329,8 +316,6 @@ find_character_occurrence:
         ; Display "not found" message
         call find_current_cursor_position
         
-        mov ax, [add2]
-        mov es, ax
         mov bh, 0
         mov bl, 07h
         mov cx, not_found_message_length

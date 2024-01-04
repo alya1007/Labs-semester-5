@@ -142,9 +142,15 @@ main:
     ; remember segment and offset in ax:bx
     mov ax, [add1]
     mov bx, [add2]
+    
+    ; load segment to the special registers
+    mov ds, bx
+    mov es, bx
+    mov ss, bx
+    mov sp, bx
+
 
     ; jump to the loaded NASM script
-    add ax, bx
     jmp ax
 
 
