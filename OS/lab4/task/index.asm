@@ -35,14 +35,10 @@ menu:
     
     mov bh, 0
 	mov bl, 07h
-    mov cx, disclaimer_length
 
-    mov ax, disclaimer
-    add ax, word [add1]
-	mov bp, ax
-
-	mov ax, 1301h
-	int 10h 
+    mov si, disclaimer
+    add si, word [add1]
+	call print_string_inline
 
     call newline
 
@@ -101,24 +97,18 @@ menu:
     
     mov bh, 0
 	mov bl, 07h
-    mov cx, character_prompt_length
-	
-    mov ax, character_prompt
-    add ax, word [add1]
-	mov bp, ax
-
-	mov ax, 1301h
-	int 10h 
+    mov si, character_prompt
+    add si, word [add1]
+	call print_string_inline
 
     mov byte [result], 0
-    call clear_buffer
-    call read_buffer
-
-    ; move value of buffer into character
-    mov si, buffer
-    mov di, character
-    mov cx, 2
-    rep movsb
+    mov ah, 00h
+    int 16h
+    mov byte [character], al
+    ;; print the character back
+    mov ah, 0eh
+    mov bl, 07h
+    int 10h
 
     call newline
     
@@ -247,65 +237,43 @@ find_character_occurrence:
     ; initialize counter
     mov byte [counter], 0
 
-    ; get length of the string
-    mov si, string
-    mov cx, 0
-
-    count_length:
-        cmp byte [si], 0
-        je end_count_length
-        inc si
-        inc cx
-        jmp count_length
-    
-    end_count_length:
-
     ; find character occurrence
     mov si, string
     mov al, byte [character]
-    mov byte [occurrences], 0xFF ; Set to indicate occurrence not found
+    mov cx, 0; occurences counter
 
     find_occurrence_loop:
+        cmp byte [si], 0
+        je print_occurrence
         cmp byte [si], al
         je found_occurrence
-        inc byte [counter]
-        inc si
-        cmp byte [counter], cl ; Check if the entire string has been traversed
-        jge occurrence_not_found
-        jmp find_occurrence_loop
+        jne loop_end
 
-    found_occurrence:
-        mov byte [occurrences], bl ; Store the index of the occurrence (in BL)
-        jmp print_occurrence
-
-    occurrence_not_found:
-        mov byte [occurrences], 0xFF ; Indicate that character was not found
-        jmp print_occurrence
+        found_occurrence:
+            inc cx
+        
+        loop_end:
+            inc si
+            jmp find_occurrence_loop
 
     print_occurrence:
         ; Display the occurrences
-        call find_current_cursor_position
 
-        cmp byte [occurrences], 0xFF
+        cmp cx, 0
         je display_not_found
 
         ; Convert index (BL register) to string
         pusha
-        mov ax, 0
-        mov ah, byte [occurrences]
+        call find_current_cursor_position
+        mov ax, cx
 
         mov di, another_buffer
         call int_to_string
 
-        ; Print the string (index of occurrence)
-        mov ax, 1300h       ; Print string
         mov bh, 0           ; Page number
         mov bl, 07h         ; Text attribute
-        mov cx, 2           ; Length of the string in CX
-        mov dh, 4           ; Row
-        mov dl, 9           ; Column
-        mov bp, di          ; Pointer to the string
-        int 10h
+        mov si, another_buffer
+        call print_string_inline
 
         popa
 
@@ -371,10 +339,15 @@ clear_buffer:
 
 
 find_current_cursor_position:
+    push ax
+    push bx
+    push cx
     mov ah, 03h
     mov bh, byte 0
     int 10h
-
+    pop cx
+    pop bx
+    pop ax
     ret
 
 
@@ -389,26 +362,66 @@ newline:
 
     ret
 
+;; Gets string length
+;; Parameters: si - pointer to string
+;; Returns:    cx    - string length
+;; Notes       String must be zero terminated
+str_len:
+    mov cx, 0
+    mov [pointer_store], si
+    cmp byte [si], 0
+    je .str_len_end
+
+    .str_len_loop:
+        inc cx
+        inc si
+        cmp byte [si], 0
+        jne .str_len_loop
+
+    .str_len_end:
+        mov si, [pointer_store]
+        ret
+
+;; Print string at cursor position and move cursor at the end of it
+;; Parameters: bh    - page number
+;;             bl    - video attribute http://www.techhelpmanual.com/87-screen_attributes.html
+;;             si - pointer to string
+;; Returns:    None
+print_string_inline:
+    pusha
+    mov bh, 0
+    ;; Get cursor position
+    mov ah, 03H
+    int 10h
+    ;; Get string length
+    call str_len
+    mov ax, 1301h
+    mov bp, si
+    int 10h
+    popa
+    ret
+
 
 section .data
-    disclaimer db "Find the index of all ocurrences of a character in a string."
+    disclaimer db "Find the index of all ocurrences of a character in a string.", 0
     disclaimer_length equ 72
 
-    reboot_prompt db "Press r to reboot or any other key to continue: "
+    reboot_prompt db "Press r to reboot or any other key to continue: ", 0
     reboot_prompt_length equ 47
 
-    string_prompt db "String: "
+    string_prompt db "String: ", 0
     string_prompt_length equ 8
 
-    character_prompt db "Character: "
+    character_prompt db "Character: ", 0
     character_prompt_length equ 11
 
-    not_found_message db "Character not found in the string."
+    not_found_message db "Character not found in the string.", 0
     not_found_message_length equ 34
 
-    result_prompt db "Result: "
+    result_prompt db "Result: ", 0
     result_prompt_length equ 8
 
+    pointer_store dw 0 ; used by str_len to avoid changing extra registers
 
 section .bss
     string resb 20
