@@ -18,27 +18,27 @@ _start:
     mov byte [char_counter], 0
     mov byte [result], 0
 
-    mov byte [page], 0
     mov byte [c], 0
     
     jmp menu
 
 
 menu:
-    ; mov byte [page], 0
     mov word [line_number], 10
 
     ; set text video mode
     mov ah, 00h 
     mov al, 2
-    int 10h  
+    int 10h 
+
+    call clear_screen
 
     ; print command disclaimer
     call find_current_cursor_position
     
     mov ax, [add2]
 	mov es, ax
-    mov bh, [page]
+    mov bh, 0
 	mov bl, 07h
     mov cx, disclaimer_length
 
@@ -57,7 +57,7 @@ menu:
     
     mov ax, [add2]
 	mov es, ax
-    mov bh, [page]
+    mov bh, 0
 	mov bl, 07h
     mov cx, reboot_prompt_length
 
@@ -82,7 +82,7 @@ menu:
     
     mov ax, [add2]
 	mov es, ax
-    mov bh, [page]
+    mov bh, 0
 	mov bl, 07h
     mov cx, string_prompt_length
 	
@@ -110,7 +110,7 @@ menu:
     
     mov ax, [add2]
 	mov es, ax
-    mov bh, [page]
+    mov bh, 0
 	mov bl, 07h
     mov cx, character_prompt_length
 	
@@ -132,29 +132,46 @@ menu:
     rep movsb
 
     call newline
-    ; call print_string
-    call find_character_occurence
     
-    ; read character
-    mov ah, 00h
-    int 16h
+    ; display result prompt
+    call find_current_cursor_position
 
-    call change_page_number
-    jmp menu
+    mov ax, [add2]
+    mov es, ax
+    mov bh, 0
+    mov bl, 07h
+    mov cx, result_prompt_length
+
+    mov ax, result_prompt
+    add ax, word [add1]
+    mov bp, ax
+
+    mov ax, 1301h
+    int 10h
+
+    call find_character_occurrence
     
     jmp end
+
+
+clear_screen:
+    mov ah, 0; set the video mode
+    mov al, 3; 80x25 text mode
+    int 10h
+    ret
+
 
 
 print_character:
     mov ax, 0
 
-    mov ah, byte [occurences]
+    mov ah, byte [result]
     call int_to_string
 
     ; print string from di
 
     mov ax, 1300H; print string
-    mov bh, [page]; page number
+    mov bh, 0; page number
     mov bl, 03H; text attribute
     mov cx, 2
     mov dh, 1;
@@ -167,7 +184,7 @@ print_character:
 end:
 
 reboot:
-    call change_page_number
+    call clear_screen
 
     ; set text video mode
     mov ah, 00h 
@@ -239,7 +256,7 @@ read_buffer:
     ret
 
 
-find_character_occurence:
+find_character_occurrence:
     ; initialize counter
     mov byte [counter], 0
 
@@ -256,10 +273,10 @@ find_character_occurence:
     
     end_count_length:
 
-    ; find character occurence
+    ; find character occurrence
     mov si, string
     mov al, byte [character]
-    mov byte [occurences], 0 ; Result will store the index of the first occurrence
+    mov byte [occurrences], 0xFF ; Set to indicate occurrence not found
 
     find_occurrence_loop:
         cmp byte [si], al
@@ -271,50 +288,50 @@ find_character_occurence:
         jmp find_occurrence_loop
 
     found_occurrence:
-        mov byte [occurences], cl ; Store the index of the occurrence
+        mov byte [occurrences], bl ; Store the index of the occurrence (in BL)
         jmp print_occurrence
 
     occurrence_not_found:
-        mov byte [occurences], 0xFF ; Indicate that character was not found
+        mov byte [occurrences], 0xFF ; Indicate that character was not found
         jmp print_occurrence
 
     print_occurrence:
-        cmp byte [occurences], 0xFF
+        ; Display the occurrences
+        call find_current_cursor_position
+
+        cmp byte [occurrences], 0xFF
         je display_not_found
 
-        ; Print the index of the first occurrence on the second page
-        mov ah, 00h
-        mov al, 2
+        ; Convert index (BL register) to string
+        pusha
+        mov ax, 0
+        mov ah, byte [occurrences]
+
+        mov di, another_buffer
+        call int_to_string
+
+        ; Print the string (index of occurrence)
+        mov ax, 1300h       ; Print string
+        mov bh, 0           ; Page number
+        mov bl, 07h         ; Text attribute
+        mov cx, 2           ; Length of the string in CX
+        mov dh, 4           ; Row
+        mov dl, 9           ; Column
+        mov bp, di          ; Pointer to the string
         int 10h
 
-        call newline
-
-        mov ax, [add2]
-        mov es, ax
-        mov bh, [page] ; Change to second page
-        mov bl, 07h
-        mov cx, second_page_length
-
-        mov ax, second_page
-        add ax, word [add1]
-        mov bp, ax
-
-        mov ax, 1301h
-        int 10h
-
-        call newline
-
-        call print_character
+        popa
 
         jmp end_find_character_occurrence
 
+
     display_not_found:
-        ; print not found prompt
+        ; Display "not found" message
         call find_current_cursor_position
         
         mov ax, [add2]
         mov es, ax
-        mov bh, [page]
+        mov bh, 0
         mov bl, 07h
         mov cx, not_found_message_length
 
@@ -367,18 +384,10 @@ clear_buffer:
 
     ret
 
-change_page_number:
-    inc byte [page]
-    mov ah, 05h
-    mov al, [page]
-    int 10h
-
-    ret
-
 
 find_current_cursor_position:
     mov ah, 03h
-    mov bh, byte [page]
+    mov bh, byte 0
     int 10h
 
     ret
@@ -400,9 +409,6 @@ section .data
     disclaimer db "Find the index of all ocurrences of a character in a string."
     disclaimer_length equ 72
 
-    second_page db "Second page"
-    second_page_length equ 11
-
     reboot_prompt db "Press r to reboot or any other key to continue: "
     reboot_prompt_length equ 47
 
@@ -415,6 +421,9 @@ section .data
     not_found_message db "Character not found in the string."
     not_found_message_length equ 34
 
+    result_prompt db "Result: "
+    result_prompt_length equ 8
+
 
 section .bss
     string resb 20
@@ -424,15 +433,16 @@ section .bss
     character resb 1
 
     char_counter resb 1
+    occurrences resb 1
+
     result resb 1
 
-    occurences resb 1
-
-    page resb 1
     c resb 1
 
     counter resb 1
 
     add1 resb 2
     add2 resb 2
-    buffer resb 100
+    buffer resb 10
+    another_buffer resb 10
+
