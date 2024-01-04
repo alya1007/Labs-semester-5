@@ -138,26 +138,6 @@ clear_screen:
     ret
 
 
-
-print_character:
-    mov ax, 0
-
-    mov ah, byte [result]
-    call int_to_string
-
-    ; print string from di
-
-    mov ax, 1300H; print string
-    mov bh, 0; page number
-    mov bl, 03H; text attribute
-    mov cx, 2
-    mov dh, 1;
-    mov dl, 0; column
-    mov bp, di; pointer to occcurance number
-    int 10h
-
-    ret
-
 end:
 
 reboot:
