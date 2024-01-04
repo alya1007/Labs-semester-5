@@ -97,9 +97,6 @@ menu:
     call clear_buffer
     call read_buffer
 
-    ; mov al, [result]
-    ; mov byte [string], al
-
     ; move value of buffer into string
     mov si, buffer
     mov di, string
@@ -128,9 +125,6 @@ menu:
     call clear_buffer
     call read_buffer
 
-    ; mov al, [result]
-    ; mov byte [character], al
-
     ; move value of buffer into character
     mov si, buffer
     mov di, character
@@ -138,7 +132,8 @@ menu:
     rep movsb
 
     call newline
-    call print_string
+    ; call print_string
+    call find_character_occurence
     
     ; read character
     mov ah, 00h
@@ -148,21 +143,23 @@ menu:
     jmp menu
     
     jmp end
-    
-    
-print_string:
-    ; set graphic video mode
-    mov ah, 00h 
-    mov al, 3
-    int 10h
+
+
+print_character:
+    mov ax, 0
+
+    mov ah, byte [occurences]
+    call int_to_string
+
+    ; print string from di
 
     mov ax, 1300H; print string
     mov bh, [page]; page number
     mov bl, 03H; text attribute
-    mov cx, 4
+    mov cx, 2
     mov dh, 1;
     mov dl, 0; column
-    mov bp, character; pointer to string
+    mov bp, di; pointer to occcurance number
     int 10h
 
     ret
@@ -242,6 +239,127 @@ read_buffer:
     ret
 
 
+find_character_occurence:
+    ; initialize counter
+    mov byte [counter], 0
+
+    ; get length of the string
+    mov si, string
+    mov cx, 0
+
+    count_length:
+        cmp byte [si], 0
+        je end_count_length
+        inc si
+        inc cx
+        jmp count_length
+    
+    end_count_length:
+
+    ; find character occurence
+    mov si, string
+    mov al, byte [character]
+    mov byte [occurences], 0 ; Result will store the index of the first occurrence
+
+    find_occurrence_loop:
+        cmp byte [si], al
+        je found_occurrence
+        inc byte [counter]
+        inc si
+        cmp byte [counter], cl ; Check if the entire string has been traversed
+        jge occurrence_not_found
+        jmp find_occurrence_loop
+
+    found_occurrence:
+        mov byte [occurences], cl ; Store the index of the occurrence
+        jmp print_occurrence
+
+    occurrence_not_found:
+        mov byte [occurences], 0xFF ; Indicate that character was not found
+        jmp print_occurrence
+
+    print_occurrence:
+        cmp byte [occurences], 0xFF
+        je display_not_found
+
+        ; Print the index of the first occurrence on the second page
+        mov ah, 00h
+        mov al, 2
+        int 10h
+
+        call newline
+
+        mov ax, [add2]
+        mov es, ax
+        mov bh, [page] ; Change to second page
+        mov bl, 07h
+        mov cx, second_page_length
+
+        mov ax, second_page
+        add ax, word [add1]
+        mov bp, ax
+
+        mov ax, 1301h
+        int 10h
+
+        call newline
+
+        call print_character
+
+        jmp end_find_character_occurrence
+
+    display_not_found:
+        ; print not found prompt
+        call find_current_cursor_position
+        
+        mov ax, [add2]
+        mov es, ax
+        mov bh, [page]
+        mov bl, 07h
+        mov cx, not_found_message_length
+
+        mov ax, not_found_message
+        add ax, word [add1]
+        mov bp, ax
+
+        mov ax, 1301h
+        int 10h 
+
+        call newline
+
+    end_find_character_occurrence:
+        mov ax, 0
+
+        mov ah, 00h
+        int 16h
+
+        jmp menu
+
+        ret
+
+
+int_to_string:
+    pusha
+    mov bx, 10
+    mov cx, 0
+    .int_to_string_loop:
+        xor dx, dx
+        div bx
+        push dx
+        inc cx
+        cmp ax, 0
+        jne .int_to_string_loop
+    .int_to_string_loop2:
+        pop dx
+        add dl, '0'
+        mov [di], dl
+        inc di
+        loop .int_to_string_loop2
+    mov byte [di], 0
+    popa
+    ret
+
+
 clear_buffer:
     mov byte [char_counter], 0
     mov byte [si], 0
@@ -294,6 +412,9 @@ section .data
     character_prompt db "Character: "
     character_prompt_length equ 11
 
+    not_found_message db "Character not found in the string."
+    not_found_message_length equ 34
+
 
 section .bss
     string resb 20
@@ -305,8 +426,12 @@ section .bss
     char_counter resb 1
     result resb 1
 
+    occurences resb 1
+
     page resb 1
     c resb 1
+
+    counter resb 1
 
     add1 resb 2
     add2 resb 2
