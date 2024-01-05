@@ -8,8 +8,6 @@ _start:
 
     mov byte [string], 0
 
-    mov word [line_number], 10
-
     mov word [character], 0
 
     mov byte [char_counter], 0
@@ -21,8 +19,6 @@ _start:
 
 
 menu:
-    mov word [line_number], 10
-
     ; set text video mode
     mov ah, 00h 
     mov al, 2
@@ -37,8 +33,8 @@ menu:
 	mov bl, 07h
 
     mov si, disclaimer
-    add si, word [add1]
-	call print_string_inline
+    add si, word [add1] ; add offset to si
+	call print_string_inline ; prints the string pointed by si
 
     call newline
 
@@ -57,7 +53,7 @@ menu:
 	mov ax, 1301h
 	int 10h 
 
-    ; read character
+    ; read character and store it in al
     mov ah, 00h
     int 16h
 
@@ -88,7 +84,7 @@ menu:
     mov si, buffer
     mov di, string
     mov cx, 20
-    rep movsb
+    rep movsb ; move string from si to di
 
     call newline
 
@@ -102,10 +98,12 @@ menu:
 	call print_string_inline
 
     mov byte [result], 0
+    
+    ; read character and store it in al
     mov ah, 00h
     int 16h
-    mov byte [character], al
-    ;; print the character back
+    mov byte [character], al 
+    ;; print the character back from al
     mov ah, 0eh
     mov bl, 07h
     int 10h
@@ -148,6 +146,7 @@ reboot:
     mov al, 2
     int 10h 
 
+    ; jump to mini_bootloader
     jmp 0000h:7c00h
 
 
@@ -178,25 +177,24 @@ read_buffer:
         jmp read_char
     
     handle_enter:
-        mov byte [si], 0
-        mov si, buffer
-        ; call convert_input_int
+        mov byte [si], 0 ; add null terminator to the end of the string
+        mov si, buffer ; reset pointer to the beginning of the buffer
         jmp end_read_buffer
 
     handle_backspace:
         call find_current_cursor_position
 
-        cmp byte [char_counter], 0
+        cmp byte [char_counter], 0 ; if the buffer is empty
         je read_char
 
         ; clear last buffer char 
-        dec si
+        dec si ; move pointer back by one
         dec byte [char_counter]
 
         ; move cursor to the left
         mov ah, 02h
         mov bh, 0
-        dec dl
+        dec dl ; move left by one column
         int 10h
 
         ; print space instead of the cleared char
@@ -218,23 +216,23 @@ find_character_occurrence:
     mov byte [counter], 0
 
     ; find character occurrence
-    mov si, string
-    mov al, byte [character]
-    mov cx, 0; occurences counter
+    mov si, string ; set si to the beginning of the string
+    mov al, byte [character] ; character to find
+    mov cx, 0 ; occurences counter
 
     find_occurrence_loop:
-        cmp byte [si], 0
+        cmp byte [si], 0 ; if the string is empty
         je print_occurrence
-        cmp byte [si], al
+        cmp byte [si], al ; if the character is found
         je found_occurrence
         jne loop_end
 
         found_occurrence:
-            inc cx
+            inc cx ; increment occurrences counter
         
         loop_end:
-            inc si
-            jmp find_occurrence_loop
+            inc si ; move to the next character
+            jmp find_occurrence_loop ; continue looping for the next character
 
     print_occurrence:
         ; Display the occurrences
@@ -242,13 +240,13 @@ find_character_occurrence:
         cmp cx, 0
         je display_not_found
 
-        ; Convert index (BL register) to string
+        ; Convert count (BL register) to string
         pusha
         call find_current_cursor_position
-        mov ax, cx
+        mov ax, cx ; move count to ax
 
         mov di, another_buffer
-        call int_to_string
+        call int_to_string ; converts string pointed by di (another_buffer) to string
 
         mov bh, 0           ; Page number
         mov bl, 07h         ; Text attribute
@@ -278,6 +276,7 @@ find_character_occurrence:
         call newline
 
     end_find_character_occurrence:
+        ; listen for key press and then jump to menu
         mov ax, 0
 
         mov ah, 00h
@@ -288,36 +287,44 @@ find_character_occurrence:
         ret
 
 
-int_to_string:
+;; Converts uint to string
+;; Parameters: ax - uint to convert
+;;             di - buffer to store string
+;; Returns:    Nothing
+;; Mutates:    di
+ int_to_string:
     pusha
-    mov bx, 10
-    mov cx, 0
+    mov bx, 10 ; Move constant 10 to bx for division
+    mov cx, 0  ; Initialize counter for the number of digits
     .int_to_string_loop:
-        xor dx, dx
-        div bx
-        push dx
+        xor dx, dx  ; Clear dx for division
+        div bx      ; Divide ax by 10, quotient in ax, remainder in dx
+        push dx     ; Push remainder (digit) onto stack
         inc cx
         cmp ax, 0
-        jne .int_to_string_loop
+        jne .int_to_string_loop ; If not zero, continue looping
     .int_to_string_loop2:
-        pop dx
-        add dl, '0'
-        mov [di], dl
-        inc di
-        loop .int_to_string_loop2
-    mov byte [di], 0
+        pop dx      ; Pop digit from stack to dx
+        add dl, '0' ; Convert digit to ASCII character
+        mov [di], dl ; Store ASCII character in buffer
+        inc di      ; Move to the next position in the buffer
+        loop .int_to_string_loop2 ; Continue until all digits are processed
+    mov byte [di], 0 ; Null-terminate the string in the buffer
     popa
     ret
 
 
 clear_buffer:
-    mov byte [char_counter], 0
-    mov byte [si], 0
-    mov si, buffer
+    mov byte [char_counter], 0 ; reset char counter
+    mov byte [si], 0 ; null terminate the buffer
+    mov si, buffer ; set si to the beginning of the buffer
 
     ret
 
-
+;; Finds the current cursor position
+;; Parameters: None
+;; Returns:    dh - row
+;;             dl - column
 find_current_cursor_position:
     push ax
     push bx
@@ -332,19 +339,19 @@ find_current_cursor_position:
 
 
 newline:
-    call find_current_cursor_position
+    call find_current_cursor_position ; dh = row, dl = column
 
     mov ah, 02h
     mov bh, 0
-    inc dh
-    mov dl, 0
+    inc dh ; on the next row compared to the current one
+    mov dl, 0 ; at the beginning of the row
     int 10h
 
     ret
 
 ;; Gets string length
 ;; Parameters: si - pointer to string
-;; Returns:    cx    - string length
+;; Returns:    cx - string length
 ;; Notes       String must be zero terminated
 str_len:
     mov cx, 0
@@ -352,6 +359,7 @@ str_len:
     cmp byte [si], 0
     je .str_len_end
 
+    ; increment cx and si until the null terminator is reached
     .str_len_loop:
         inc cx
         inc si
@@ -359,12 +367,12 @@ str_len:
         jne .str_len_loop
 
     .str_len_end:
-        mov si, [pointer_store]
+        mov si, [pointer_store] ; restore si
         ret
 
 ;; Print string at cursor position and move cursor at the end of it
-;; Parameters: bh    - page number
-;;             bl    - video attribute http://www.techhelpmanual.com/87-screen_attributes.html
+;; Parameters: bh - page number
+;;             bl - video attribute http://www.techhelpmanual.com/87-screen_attributes.html
 ;;             si - pointer to string
 ;; Returns:    None
 print_string_inline:
@@ -374,7 +382,7 @@ print_string_inline:
     mov ah, 03H
     int 10h
     ;; Get string length
-    call str_len
+    call str_len ; cx = string length
     mov ax, 1301h
     mov bp, si
     int 10h
@@ -405,8 +413,6 @@ section .data
 
 section .bss
     string resb 20
-
-    line_number resb 2
 
     character resb 1
 
